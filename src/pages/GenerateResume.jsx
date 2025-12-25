@@ -1,29 +1,42 @@
 import React, { useState } from 'react';
 import { Sparkles, Wand2, Trash2, FileText, Lightbulb, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { generateResume } from '../api/ResumeService';
 
 
 function GenerateResume() {
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
+  const [resumeData, setResumeData] = useState(null);
+  const [error, setError] = useState("");
+
 
 
   const navigate = useNavigate();
 
-  const handleGenerate = () => {
-    if (!description.trim()) {
-      alert('Please enter your description first!');
-      return;
-    }
+  const handleGenerate = async () => {
+  if (!description.trim()) return;
+
+  try {
     setIsGenerating(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsGenerating(false);
-      alert('Resume generated successfully! This would navigate to the resume preview page.');
-      // Here you would actually call your AI API and navigate to results
-    }, 2000);
-  };
+
+    // 1. Call backend
+    const resumeData = await generateResume(description);
+
+    // 2. Navigate AFTER response arrives
+    navigate("/resume-edit", { state: resumeData });
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to generate resume");
+  } finally {
+    setIsGenerating(false);
+  }
+};
+
+
+
   const handleBackToHome = () => {
     navigate("/");
   };

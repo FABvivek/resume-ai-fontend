@@ -10,6 +10,7 @@ import About from "./pages/About";
 import Services from "./pages/Services";
 import Contact from "./pages/Contact";
 import GenerateResume from "./pages/GenerateResume";
+import ResumeEdit from "./pages/ResumeEdit";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -21,6 +22,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="services" element={<Services />} />
           <Route path="contact" element={<Contact />} />
           <Route path="generate-resume" element={<GenerateResume />} />
+          <Route path="resume-edit" element={<ResumeEdit />} />
         </Route>
       </Routes>
     </BrowserRouter>
