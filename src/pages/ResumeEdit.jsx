@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, Plus, Trash2, ArrowLeft, Sparkles, User, Briefcase, GraduationCap, Award, Code, Trophy, X } from 'lucide-react';
+import { useNavigate } from "react-router";
+import { useLocation } from 'react-router';
 
 export default function ResumeEditForm() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const aiResponse = location.state?.aiResponse;
+
+  // Initialize with AI response data or default empty structure
   const [formData, setFormData] = useState({
     personalInformation: {
-      fullName: "Vivek Singh",
+      fullName: "",
       email: "",
       phoneNumber: "",
       location: "",
@@ -12,45 +19,39 @@ export default function ResumeEditForm() {
       githubHub: "",
       portfolio: ""
     },
-    skills: [
-      { title: "Java Development", level: "Senior" },
-      { title: "Spring Boot", level: "Mid-Level" },
-      { title: "Java 17-21", level: "Basic" }
-    ],
-    experience: [
-      {
-        jobTitle: "Backend Developer",
-        company: "E-commerce Application Company",
-        location: "New York, NY",
-        duration: "Jan 2020 - Present",
-        responsibility: "Developed backend services for e-commerce application including user authentication, product catalog, order management, and payment integration"
-      }
-    ],
-    education: [
-      {
-        degree: "Computer Science & Technology, B.S.",
-        university: "University of California, Berkeley",
-        location: "San Francisco, CA",
-        graduationYear: "2016"
-      }
-    ],
+    skills: [],
+    experience: [],
+    education: [],
     certifications: [],
-    projects: [
-      {
-        title: "E-commerce Backend",
-        description: "Built backend services for an e-commerce application including user authentication, product catalog, order management, and payment integration."
-      }
-    ],
-    achievements: [
-      {
-        title: "Java Development",
-        year: "2021",
-        extraInformation: "Developed scalable microservices architecture using Spring Boot and Java 17-21"
-      }
-    ],
+    projects: [],
+    achievements: [],
     languages: [],
     interests: []
   });
+
+  // Populate form when AI response is received
+  useEffect(() => {
+    console.log('🔍 Checking aiResponse:', aiResponse); // Debug log
+    
+    if (aiResponse && aiResponse.data) {
+      console.log('✅ Setting form data from AI response'); // Debug log
+      setFormData({
+        personalInformation: aiResponse.data.personalInformation || formData.personalInformation,
+        skills: aiResponse.data.skills || [],
+        experience: aiResponse.data.experience || [],
+        education: aiResponse.data.education || [],
+        certifications: aiResponse.data.certifications || [],
+        projects: aiResponse.data.projects || [],
+        achievements: aiResponse.data.achievements || [],
+        languages: aiResponse.data.languages || [],
+        interests: aiResponse.data.interests || []
+      });
+    } else {
+      console.log('❌ No AI response data found'); // Debug log
+    }
+  }, [aiResponse]);
+
+  
 
   // Personal Information Handlers
   const handlePersonalInfoChange = (field, value) => {
@@ -199,12 +200,12 @@ export default function ResumeEditForm() {
   };
 
   const handleSave = () => {
-    console.log('Saving resume data:', formData);
-    alert('Resume saved successfully! This would save to your backend and generate the final resume.');
-  };
+  console.log('Saving resume data:', formData);
+  navigate("/DownloadResume", { state: { resumeData: formData } });
+};
 
   const handleBack = () => {
-    alert('Navigate back - implement your routing logic here');
+    navigate("/generate-resume");
   };
 
   return (

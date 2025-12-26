@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, FileText, Zap, Target, CheckCircle, Users, TrendingUp, Download, Brain, Wand2, Rocket, Star, ArrowRight, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { Link } from "react-router";
+
 
 
 export default function LandingPage() {

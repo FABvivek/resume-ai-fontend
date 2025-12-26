@@ -16,24 +16,33 @@ function GenerateResume() {
   const navigate = useNavigate();
 
   const handleGenerate = async () => {
-  if (!description.trim()) return;
-
-  try {
+    if (!description.trim()) {
+      alert('Please enter your description first!');
+      return;
+    }
+    
     setIsGenerating(true);
-
-    // 1. Call backend
-    const resumeData = await generateResume(description);
-
-    // 2. Navigate AFTER response arrives
-    navigate("/resume-edit", { state: resumeData });
-
-  } catch (error) {
-    console.error(error);
-    alert("Failed to generate resume");
-  } finally {
-    setIsGenerating(false);
-  }
-};
+    setError('');
+    
+    try {
+      // Call your API
+      const response = await generateResume(description);
+      
+      console.log('AI Response:', response);
+      
+      // Navigate to form page with the AI response
+      navigate('/resume-edit', { 
+        state: { aiResponse: response } 
+      });
+      
+    } catch (error) {
+      console.error('Error generating resume:', error);
+      setError('Failed to generate resume. Please try again.');
+      alert('Error generating resume. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
 
 

@@ -11,7 +11,7 @@ import Services from "./pages/Services";
 import Contact from "./pages/Contact";
 import GenerateResume from "./pages/GenerateResume";
 import ResumeEdit from "./pages/ResumeEdit";
-
+import PreviewandDownload from "./pages/PreviewandDownload";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
@@ -23,6 +23,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="contact" element={<Contact />} />
           <Route path="generate-resume" element={<GenerateResume />} />
           <Route path="resume-edit" element={<ResumeEdit />} />
+          <Route path="DownloadResume" element={<PreviewandDownload/>} />
         </Route>
       </Routes>
     </BrowserRouter>
