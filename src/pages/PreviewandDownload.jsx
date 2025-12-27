@@ -1,27 +1,99 @@
-import React, { useState, useRef } from 'react';
-import { Download, Edit, ArrowLeft, Mail, Phone, MapPin, Linkedin, Github, Globe, Trophy, Sparkles, FileText, Check, Star, Zap, Eye } from 'lucide-react';
+import React from 'react';
+import html2pdf from 'html2pdf.js';
+import { useReactToPrint } from 'react-to-print';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { useLocation, useNavigate } from 'react-router';
+import { Download, Edit, ArrowLeft, Mail, Phone, MapPin, Linkedin, Github, Globe, Trophy, Sparkles, FileText, Check, Star, Zap, Eye , Rocket } from 'lucide-react';
 
-export default function ResumePreviewPage({ resumeData, onBack, onEdit }) {
-  const [selectedFormat, setSelectedFormat] = useState('pdf');
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const resumeRef = useRef(null);
-
+function DownloadResume() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const resumeData = location.state?.resumeData;
+  
+  const [selectedFormat, setSelectedFormat] = React.useState('pdf');
+  const [isDownloading, setIsDownloading] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
+  const resumeRef = React.useRef(null);
+  
+  console.log('📄 Data received in DownloadResume:', resumeData);
+  console.log('📄 Personal Info:', resumeData?.personalInformation);
+  console.log('📄 Skills:', resumeData?.skills);
+  
   const data = resumeData || {};
-  console.log("📄 Resume data in preview:", data);
-
-
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    
-    // Simulate download
-    setTimeout(() => {
-      // In real implementation, you would generate PDF/DOCX here
-      const fileName = `${data.personalInformation?.fullName || 'Resume'}_${selectedFormat}`;
-      alert(`Downloading: ${fileName}`);
-      setIsDownloading(false);
-    }, 1500);
+  
+  const handleBack = () => {
+    navigate(-1);
   };
+  
+  const handleEdit = () => {
+    navigate('/resume-edit', { state: { aiResponse: { data: resumeData } } });
+  };
+  
+
+
+const handleDownload = async () => {
+  setIsDownloading(true);
+  
+  try {
+    if (selectedFormat === 'pdf') {
+      const element = resumeRef.current;
+      
+      // Capture the element as canvas
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        removeContainer: true
+      });
+      
+      // Convert to PDF
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`${data.personalInformation?.fullName || 'Resume'}.pdf`);
+      
+    } else if (selectedFormat === 'docx') {
+      downloadAsDocx();
+    } else if (selectedFormat === 'txt') {
+      downloadAsTxt();
+    }
+  } catch (error) {
+    console.error('Download error:', error);
+    alert(`Download failed. Please try TXT format.`);
+  } finally {
+    setIsDownloading(false);
+  }
+};
+
+  
+  
+  if (!resumeData) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">⚠️ No resume data found</h2>
+          <p className="text-gray-400 mb-6">Please go back and fill out the form</p>
+          <button 
+            onClick={() => navigate('/resume-edit')} 
+            className="px-6 py-3 bg-purple-600 rounded-lg hover:bg-purple-700"
+          >
+            Go to Form
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black text-white overflow-hidden">
@@ -86,11 +158,11 @@ export default function ResumePreviewPage({ resumeData, onBack, onEdit }) {
               </span>
             </div>
             <div className="flex gap-4">
-              <button onClick={onBack} className="group px-6 py-3 rounded-2xl font-semibold bg-white/10 border border-white/20 hover:border-purple-400/60 hover:bg-white/15 backdrop-blur-xl transition-all flex items-center shadow-lg shadow-black/20 hover:shadow-purple-500/30 hover:scale-105">
+              <button onClick={handleBack} className="group px-6 py-3 rounded-2xl font-semibold bg-white/10 border border-white/20 hover:border-purple-400/60 hover:bg-white/15 backdrop-blur-xl transition-all flex items-center shadow-lg shadow-black/20 hover:shadow-purple-500/30 hover:scale-105">
                 <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
                 Back
               </button>
-              <button onClick={onEdit} className="group px-6 py-3 rounded-2xl font-semibold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-500 hover:via-pink-500 hover:to-purple-500 transition-all flex items-center shadow-2xl shadow-purple-500/50 hover:shadow-pink-500/50 hover:scale-105 border border-purple-400/30">
+              <button onClick={handleEdit} className="group px-6 py-3 rounded-2xl font-semibold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-500 hover:via-pink-500 hover:to-purple-500 transition-all flex items-center shadow-2xl shadow-purple-500/50 hover:shadow-pink-500/50 hover:scale-105 border border-purple-400/30">
                 <Edit className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
                 Edit Resume
               </button>
@@ -112,8 +184,11 @@ export default function ResumePreviewPage({ resumeData, onBack, onEdit }) {
           
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black mb-6 leading-tight">
             <span className="text-white drop-shadow-2xl">Your Resume is</span>
-            <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
-              Ready to Impress! 🚀
+            <span className="flex items-center justify-center gap-4">
+              <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
+                Ready to Impress!
+              </span>
+              <Rocket className="w-16 h-16 text-blue-500 fill-blue-400 animate-bounce drop-shadow-[0_0_20px_rgba(59,130,246,0.8)]" />
             </span>
           </h1>
           <p className="text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
@@ -169,7 +244,7 @@ export default function ResumePreviewPage({ resumeData, onBack, onEdit }) {
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-blue-600/20"></div>
                   <div className="relative">
                     <h1 className="text-4xl sm:text-5xl font-black text-white mb-3 tracking-tight">
-                      {data.personalInformation?.fullName}
+                      {data.personalInformation?.fullName || 'Your Name'}
                     </h1>
                     <div className="flex flex-wrap gap-4 text-sm text-gray-300">
                       {data.personalInformation?.email && (
@@ -418,3 +493,5 @@ export default function ResumePreviewPage({ resumeData, onBack, onEdit }) {
     </div>
   );
 }
+
+export default DownloadResume;
